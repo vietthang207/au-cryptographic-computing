@@ -1,14 +1,17 @@
-# Compatibility between 8 blood types:
+# Assignment 1
+Name: Dinh Viet Thang
+
+## Compatibility between 8 blood types:
 
 Both of the following rules need to be satisfied at the same time:
 
-- Rule 1: Positive types can receive from both positive and negative types. Negative types can receive from negative types only.
+- Rule 1 (Rh rule): Positive types can receive from both positive and negative types. Negative types can receive from negative types only.
 
-- Rule 2: O can only receive from O, A can receive from A and O, B can receive from B and O, AB can receive from A, B and O.
+- Rule 2 (ABO rule): O can only receive from O, A can receive from A and O, B can receive from B and O, AB can receive from A, B and O.
 
-# Functions
+## Functions
 
-## Truth table:
+### Truth table:
 
 | x  | y  | Compatible |
 |----|----|------------|
@@ -29,7 +32,7 @@ Both of the following rules need to be satisfied at the same time:
 | O  | B  | 0          |
 | O  | O  | 1          |
 
-## 3-bit encoding:
+### 3-bit encoding:
 
 x is the recipient and y is the donor
 
