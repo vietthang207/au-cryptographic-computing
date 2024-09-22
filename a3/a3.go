@@ -375,6 +375,12 @@ func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
 
 func main() {
 	// testBloodTypeTruthTable();
+
+	//Circuit encoding convention:
+	//Gate                  | firstFanin          | secondFanin
+	//Input                 | index of input bit  | 0
+	//XOR/AND with constant | index of input wire | constant                   |
+	//Binary gate           | index of input wire | index of second input wire |
 	var gates = []LogicGate {InputA, InputA, InputA, InputB, InputB, InputB, XorConst, XorConst, XorConst, And2Wires, And2Wires, And2Wires, XorConst, XorConst, XorConst, And2Wires, And2Wires, Output}
 	var firstFanins = []int {     0,      1,      2,      0,      1,      2,        0,        1,        2,         6,         7,         8,        9,       10,       11,        12,        15,      0}
 	var secondFanins = []int{     0,      0,      0,      0,      0,      0,        1,        1,        1,         3,         4,         5,        1,        1,        1,        13,        14,      0}
