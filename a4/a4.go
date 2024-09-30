@@ -86,25 +86,18 @@ func isPrime(x int) bool {
 
 func getSafePrimePair(size int) (q int, p int) {
 	min := 1 << (size - 1)
-	r := rand.Intn(min)
-	q = min + r
+	// -2 and +1 to ensure that we do not output 1 or -1
+	r := rand.Intn(min) - 2
+	q = min + r + 1
 	p = 2*q + 1
 	for !(isPrime(p) && isPrime(q)) {
-		r := rand.Intn(min)
-		q = min + r
+		r := rand.Intn(min) - 2
+		q = min + r + 1
 		p = 2*q + 1
 	}
 	fmt.Println("Safe prime: q: ", q, " p: ", p)
 	return
 }
-
-// func smallRand() int {
-// 	i, err := rand.Int(MAX_RAND)
-// 	if err == nil {
-// 		fmt.Println("err smallRand()")
-// 	}
-// 	return int(i.Int64())
-// }
 
 type ddhGroup interface {
 	getOrder() int
@@ -192,6 +185,26 @@ func elGamalObliviousGen(grp ddhGroup) zStarPublicKey {
 	return zStarPublicKey{g: g, h: h}
 }
 
+func elGamalEncode(grp ddhGroup, m int) int {
+	q := grp.getOrder()
+	p := 2*q + 1
+	if grp.pow(m+1, q) == 1 {
+		return (m + 1) % p
+	} else {
+		return (p - m - 1) % p
+	}
+}
+
+func elGamalDecode(grp ddhGroup, c int) int {
+	q := grp.getOrder()
+	p := 2*q + 1
+	if c <= q {
+		return (p + c - 1) % p
+	} else {
+		return (p - c - 1) % p
+	}
+}
+
 type alice struct {
 	grp   ddhGroup
 	x, sk int
@@ -225,13 +238,14 @@ func (a *alice) choose(x int) (m [TABLE_SIZE]zStarPublicKey) {
 func (b *bob) transfer(y int, pks [TABLE_SIZE]zStarPublicKey) (m [TABLE_SIZE]zStarCipherText) {
 	for i := 0; i < TABLE_SIZE; i++ {
 		res := bloodTypeTruthTable(i, y)
-		m[i] = elGamalEnc(b.grp, pks[i], res)
+		encodedMsg := elGamalEncode(b.grp, res)
+		m[i] = elGamalEnc(b.grp, pks[i], encodedMsg)
 	}
 	return
 }
 
 func (a *alice) retrieve(m [TABLE_SIZE]zStarCipherText) int {
-	return elGamalDec(a.grp, a.sk, m[a.x])
+	return elGamalDecode(a.grp, elGamalDec(a.grp, a.sk, m[a.x]))
 }
 
 func simulateProtocol(grp ddhGroup, x int, y int) int {
@@ -248,11 +262,18 @@ func main() {
 
 	grp := initZStarOfSafePrime()
 	// Simple testing
+	wrongFlag := false
 	for x := 0; x < TABLE_SIZE; x++ {
 		for y := 0; y < TABLE_SIZE; y++ {
 			if simulateProtocol(&grp, x, y) != bloodTypeTruthTable(x, y) {
 				fmt.Println("Wrong case ", x, " ", y)
+				wrongFlag = true
 			}
 		}
+	}
+	if wrongFlag {
+		fmt.Println("There's some wrong cases")
+	} else {
+		fmt.Println("All cases are correct")
 	}
 }
