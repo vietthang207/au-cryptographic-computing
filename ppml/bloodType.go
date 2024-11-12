@@ -1,4 +1,4 @@
-package main
+package ppml
 
 import "fmt"
 
@@ -53,7 +53,7 @@ func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
 	return a.output()
 }
 
-func main() {
+func Main() {
 	// testBloodTypeTruthTable();
 
 	//Circuit encoding convention:

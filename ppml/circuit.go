@@ -1,4 +1,4 @@
-package main
+package ppml
 
 type LogicGate int
 
