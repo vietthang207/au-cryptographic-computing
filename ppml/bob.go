@@ -49,50 +49,53 @@ func (b *bob) isReceiving() bool {
 	return false
 }
 
-func (b *bob) handleSending() int {
+func (b *bob) handleSending() []int {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
 	firstFanin := b.circuit.firstInputs[currentWire]
 	secondFanin := b.circuit.secondInputs[currentWire]
+	data := make([]int, 0)
 	switch gate {
 	case InputB:
 		xa := rand.Intn(MAX_BOOL)
-		xb := b.y[firstFanin] ^ xa
+		xb := b.y[firstFanin] + xa
 		b.wires[currentWire] = xb
 		b.currentWire++
-		return xa
+		return append(data, xa)
 	case And2Wires:
-		db := b.wires[firstFanin] ^ b.ub[currentWire]
-		eb := b.wires[secondFanin] ^ b.vb[currentWire]
-		bitmask := db<<1 + eb
+		db := b.wires[firstFanin] + b.ub[currentWire]
+		eb := b.wires[secondFanin] + b.vb[currentWire]
+		//bitmask := db<<1 + eb
+		data = append(data, db)
+		data = append(data, eb)
 		b.currentWire++
-		return bitmask
+		return data
 	case Output:
 		openValue := b.wires[currentWire-1]
-		return openValue
+		return append(data, openValue)
 	default:
 		panic("Incorrect case")
 	}
 }
 
-func (b *bob) handleReceiving(bitmask int) {
+func (b *bob) handleReceiving(data []int) {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
 	firstFanin := b.circuit.firstInputs[currentWire]
 	secondFanin := b.circuit.secondInputs[currentWire]
 	switch gate {
 	case InputA:
-		b.wires[currentWire] = bitmask
+		b.wires[currentWire] = data[0]
 		b.currentWire++
 	case And2Wires:
-		da := bitmask >> 1
-		ea := bitmask - da<<1
-		db := b.wires[firstFanin] ^ b.ub[currentWire]
-		eb := b.wires[secondFanin] ^ b.vb[currentWire]
-		d := da ^ db
-		e := ea ^ eb
+		da := data[0]
+		ea := data[1]
+		db := b.wires[firstFanin] + b.ub[currentWire]
+		eb := b.wires[secondFanin] + b.vb[currentWire]
+		d := da + db
+		e := ea + eb
 		//Different from Alice: no ^ (e & d)
-		b.wires[currentWire] = b.wb[currentWire] ^ (e & b.wires[firstFanin]) ^ (d & b.wires[secondFanin])
+		b.wires[currentWire] = b.wb[currentWire] + (e * b.wires[firstFanin]) + (d * b.wires[secondFanin])
 	}
 }
 
@@ -102,13 +105,13 @@ func (b *bob) handleLocalGates() {
 	firstFanin := b.circuit.firstInputs[currentWire]
 	secondFanin := b.circuit.secondInputs[currentWire]
 	switch gate {
-	case XorConst:
+	case AddConst:
 		//Different from Alice: no ^ c
 		b.wires[currentWire] = b.wires[firstFanin]
 	case AndConst:
-		b.wires[currentWire] = b.wires[firstFanin] & secondFanin
+		b.wires[currentWire] = b.wires[firstFanin] * secondFanin
 	case Xor2Wires:
-		b.wires[currentWire] = b.wires[firstFanin] ^ b.wires[secondFanin]
+		b.wires[currentWire] = b.wires[firstFanin] + b.wires[secondFanin]
 	}
 	b.currentWire++
 	return

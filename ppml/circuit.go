@@ -6,7 +6,7 @@ const (
 	InputA LogicGate = iota
 	InputB
 	Output
-	XorConst
+	AddConst
 	AndConst
 	Xor2Wires
 	And2Wires

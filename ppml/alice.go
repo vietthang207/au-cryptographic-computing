@@ -55,59 +55,62 @@ func (a *alice) handleLocalGates() {
 	firstFanin := a.circuit.firstInputs[currentWire]
 	secondFanin := a.circuit.secondInputs[currentWire]
 	switch gate {
-	case XorConst:
-		a.wires[currentWire] = a.wires[firstFanin] ^ secondFanin
+	case AddConst:
+		a.wires[currentWire] = a.wires[firstFanin] + secondFanin
 	case AndConst:
-		a.wires[currentWire] = a.wires[firstFanin] & secondFanin
+		a.wires[currentWire] = a.wires[firstFanin] * secondFanin
 	case Xor2Wires:
-		a.wires[currentWire] = a.wires[firstFanin] ^ a.wires[secondFanin]
+		a.wires[currentWire] = a.wires[firstFanin] + a.wires[secondFanin]
 	}
 	a.currentWire++
 	return
 }
 
-func (a *alice) handleSending() int {
+func (a *alice) handleSending() []int {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
 	firstFanin := a.circuit.firstInputs[currentWire]
 	secondFanin := a.circuit.secondInputs[currentWire]
+	data := make([]int, 0)
 	switch gate {
 	case InputA:
 		xb := rand.Intn(MAX_BOOL)
-		xa := a.x[firstFanin] ^ xb
+		xa := a.x[firstFanin] + xb
 		a.wires[currentWire] = xa
 		a.currentWire++
-		return xb
+		return append(data, xb)
 	case And2Wires:
-		da := a.wires[firstFanin] ^ a.ua[currentWire]
-		ea := a.wires[secondFanin] ^ a.va[currentWire]
-		bitmask := da<<1 + ea
-		return bitmask
+		da := a.wires[firstFanin] + a.ua[currentWire]
+		ea := a.wires[secondFanin] + a.va[currentWire]
+		// bitmask := da<<1 + ea
+		data = append(data, da)
+		data = append(data, ea)
+		return data
 	default:
 		panic("Incorrect case")
 	}
 }
 
-func (a *alice) handleReceiving(bitmask int) {
+func (a *alice) handleReceiving(data []int) {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
 	firstFanin := a.circuit.firstInputs[currentWire]
 	secondFanin := a.circuit.secondInputs[currentWire]
 	switch gate {
 	case InputB:
-		a.wires[currentWire] = bitmask
+		a.wires[currentWire] = data[0]
 		a.currentWire++
 	case And2Wires:
-		db := bitmask >> 1
-		eb := bitmask - db<<1
-		da := a.wires[firstFanin] ^ a.ua[currentWire]
-		ea := a.wires[secondFanin] ^ a.va[currentWire]
-		d := da ^ db
-		e := ea ^ eb
-		a.wires[currentWire] = a.wa[currentWire] ^ (e & a.wires[firstFanin]) ^ (d & a.wires[secondFanin]) ^ (e & d)
+		db := data[0]
+		eb := data[1]
+		da := a.wires[firstFanin] + a.ua[currentWire]
+		ea := a.wires[secondFanin] + a.va[currentWire]
+		d := da + db
+		e := ea + eb
+		a.wires[currentWire] = a.wa[currentWire] + (e * a.wires[firstFanin]) + (d * a.wires[secondFanin]) + (e * d)
 		a.currentWire++
 	case Output:
-		a.wires[currentWire] = a.wires[currentWire-1] ^ bitmask
+		a.wires[currentWire] = a.wires[currentWire-1] + data[0]
 		a.currentWire++
 	}
 }
@@ -121,5 +124,5 @@ func (a *alice) hasOutput() bool {
 }
 
 func (a *alice) output() int {
-	return a.wires[a.currentWire-1]
+	return a.wires[a.currentWire-1] % 2
 }

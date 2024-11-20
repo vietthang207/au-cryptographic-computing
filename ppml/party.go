@@ -9,8 +9,8 @@ type dealer struct {
 type party interface {
 	isSending() bool
 	isReceiving() bool
-	handleSending() int
-	handleReceiving(int)
+	handleSending() []int
+	handleReceiving([]int)
 	handleLocalGates()
 }
 
@@ -45,22 +45,23 @@ func (d *dealer) randB() ([]int, []int, []int) {
 	return d.ub, d.vb, d.wb
 }
 
-func send(p party) int {
+func send(p party) []int {
 	for !p.isSending() {
 		if p.isReceiving() {
-			return 0
+			data := make([]int, 0)
+			return data
 		}
 		p.handleLocalGates()
 	}
 	return p.handleSending()
 }
 
-func receive(p party, bitmask int) {
+func receive(p party, data []int) {
 	for !p.isReceiving() {
 		if p.isSending() {
 			return
 		}
 		p.handleLocalGates()
 	}
-	p.handleReceiving(bitmask)
+	p.handleReceiving(data)
 }

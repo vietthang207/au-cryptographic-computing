@@ -61,17 +61,27 @@ func Main() {
 	//Input                 | index of input bit  | 0
 	//XOR/AND with constant | index of input wire | constant                   |
 	//Binary gate           | index of input wire | index of second input wire |
-	var gates = []LogicGate{InputA, InputA, InputA, InputB, InputB, InputB, XorConst, XorConst, XorConst, And2Wires, And2Wires, And2Wires, XorConst, XorConst, XorConst, And2Wires, And2Wires, Output}
+	var gates = []LogicGate{InputA, InputA, InputA, InputB, InputB, InputB, AddConst, AddConst, AddConst, And2Wires, And2Wires, And2Wires, AddConst, AddConst, AddConst, And2Wires, And2Wires, Output}
 	var firstInputs = []int{0, 1, 2, 0, 1, 2, 0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 15, 0}
 	var secondInputs = []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 3, 4, 5, 1, 1, 1, 13, 14, 0}
 	bloodTypecircuit := circuit{gates: gates, firstInputs: firstInputs, secondInputs: secondInputs}
 	d := initDealer(bloodTypecircuit)
 	// Simple testing
+	errorFlag := false
 	for x := 0; x < TABLE_SIZE; x++ {
 		for y := 0; y < TABLE_SIZE; y++ {
-			if simulateProtocol(bloodTypecircuit, x, y, d) != bloodTypeTruthTable(x, y) {
+			expected := bloodTypeTruthTable(x, y)
+			actual := simulateProtocol(bloodTypecircuit, x, y, d)
+			if actual != expected {
+				errorFlag = true
 				fmt.Println("Wrong case ", x, " ", y)
+				fmt.Printf("Actual: %d, Expected: %d\n", actual, expected)
 			}
 		}
+	}
+	if errorFlag {
+		fmt.Println("There are some errors.")
+	} else {
+		fmt.Println("No error.")
 	}
 }
