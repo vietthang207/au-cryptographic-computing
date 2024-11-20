@@ -15,5 +15,5 @@ const (
 type circuit struct {
 	gates        []LogicGate
 	firstInputs  []int
-	secondInputs []int
+	secondInputs []int //this is index, so use int
 }

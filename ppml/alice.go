@@ -4,10 +4,10 @@ import "math/rand"
 
 type alice struct {
 	circuit     circuit
-	x           []int
-	wires       []int
+	x           []BigDec
+	wires       []BigDec
 	currentWire int
-	ua, va, wa  []int
+	ua, va, wa  []BigDec
 }
 
 func getAliceInputSize(circuit circuit) int {
@@ -24,11 +24,11 @@ func getAliceInputSize(circuit circuit) int {
 
 func initAlice(circuit circuit, bitmask int, dealer dealer) alice {
 	aliceInputSize := getAliceInputSize(circuit)
-	x := make([]int, aliceInputSize)
+	x := make([]BigDec, aliceInputSize)
 	for i := 0; i < aliceInputSize; i++ {
-		x[aliceInputSize-i-1] = (bitmask & (1 << i)) >> i
+		x[aliceInputSize-i-1] = IntToBigDecDefaultScalar((bitmask & (1 << i)) >> i)
 	}
-	wires := make([]int, len(circuit.gates))
+	wires := make([]BigDec, len(circuit.gates))
 
 	return alice{circuit: circuit, x: x, wires: wires, ua: dealer.ua, va: dealer.va, wa: dealer.wa}
 }
@@ -56,17 +56,17 @@ func (a *alice) handleLocalGates() {
 	secondFanin := a.circuit.secondInputs[currentWire]
 	switch gate {
 	case AddConst:
-		a.wires[currentWire] = a.wires[firstFanin] + secondFanin
+		a.wires[currentWire] = Add(a.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
 	case AndConst:
-		a.wires[currentWire] = a.wires[firstFanin] * secondFanin
+		a.wires[currentWire] = Mul(a.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
 	case Xor2Wires:
-		a.wires[currentWire] = a.wires[firstFanin] + a.wires[secondFanin]
+		a.wires[currentWire] = Add(a.wires[firstFanin], a.wires[secondFanin])
 	}
 	a.currentWire++
 	return
 }
 
-func (a *alice) handleSending() []int {
+func (a *alice) handleSending() []BigDec {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
 	firstFanin := a.circuit.firstInputs[currentWire]
@@ -74,7 +74,7 @@ func (a *alice) handleSending() []int {
 	data := make([]int, 0)
 	switch gate {
 	case InputA:
-		xb := rand.Intn(MAX_BOOL)
+		xb := IntToBigDecDefaultScalar(rand.Intn(MAX_BOOL))
 		xa := a.x[firstFanin] + xb
 		a.wires[currentWire] = xa
 		a.currentWire++

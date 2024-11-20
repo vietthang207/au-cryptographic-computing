@@ -4,10 +4,10 @@ import "math/rand"
 
 type bob struct {
 	circuit     circuit
-	y           []int
-	wires       []int
+	y           []BigDec
+	wires       []BigDec
 	currentWire int
-	ub, vb, wb  []int
+	ub, vb, wb  []BigDec
 }
 
 func getBobInputSize(circuit circuit) int {
@@ -25,11 +25,11 @@ func getBobInputSize(circuit circuit) int {
 func initBob(circuit circuit, bitmask int, dealer dealer) bob {
 	bobInputSize := getBobInputSize(circuit)
 
-	y := make([]int, bobInputSize)
+	y := make([]BigDec, bobInputSize)
 	for i := 0; i < bobInputSize; i++ {
-		y[bobInputSize-i-1] = (bitmask & (1 << i)) >> i
+		y[bobInputSize-i-1] = IntToBigDecDefaultScalar((bitmask & (1 << i)) >> i)
 	}
-	wires := make([]int, len(circuit.gates))
+	wires := make([]BigDec, len(circuit.gates))
 	return bob{circuit: circuit, y: y, wires: wires, ub: dealer.ub, vb: dealer.vb, wb: dealer.wb}
 }
 
@@ -49,7 +49,7 @@ func (b *bob) isReceiving() bool {
 	return false
 }
 
-func (b *bob) handleSending() []int {
+func (b *bob) handleSending() []BigDec {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
 	firstFanin := b.circuit.firstInputs[currentWire]
@@ -109,9 +109,9 @@ func (b *bob) handleLocalGates() {
 		//Different from Alice: no ^ c
 		b.wires[currentWire] = b.wires[firstFanin]
 	case AndConst:
-		b.wires[currentWire] = b.wires[firstFanin] * secondFanin
+		b.wires[currentWire] = Mul(b.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
 	case Xor2Wires:
-		b.wires[currentWire] = b.wires[firstFanin] + b.wires[secondFanin]
+		b.wires[currentWire] = Add(b.wires[firstFanin], b.wires[secondFanin])
 	}
 	b.currentWire++
 	return

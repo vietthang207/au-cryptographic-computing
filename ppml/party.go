@@ -1,54 +1,58 @@
 package ppml
 
-import "math/rand"
-
 type dealer struct {
-	ua, ub, va, vb, wa, wb []int
+	ua, ub, va, vb, wa, wb []BigDec
 }
 
 type party interface {
 	isSending() bool
 	isReceiving() bool
-	handleSending() []int
-	handleReceiving([]int)
+	handleSending() []BigDec
+	handleReceiving([]BigDec)
 	handleLocalGates()
 }
 
 func initDealer(circuit circuit) dealer {
 	gates := circuit.gates
 	circuitSize := len(gates)
-	ua := make([]int, circuitSize)
-	ub := make([]int, circuitSize)
-	va := make([]int, circuitSize)
-	vb := make([]int, circuitSize)
-	wa := make([]int, circuitSize)
-	wb := make([]int, circuitSize)
+	ua := make([]BigDec, circuitSize)
+	ub := make([]BigDec, circuitSize)
+	va := make([]BigDec, circuitSize)
+	vb := make([]BigDec, circuitSize)
+	wa := make([]BigDec, circuitSize)
+	wb := make([]BigDec, circuitSize)
 
 	for i := 0; i < circuitSize; i++ {
 		if gates[i] == And2Wires {
-			ua[i] = rand.Intn(MAX_BOOL)
-			ub[i] = rand.Intn(MAX_BOOL)
-			va[i] = rand.Intn(MAX_BOOL)
-			vb[i] = rand.Intn(MAX_BOOL)
-			wa[i] = rand.Intn(MAX_BOOL)
-			wb[i] = wa[i] ^ ((ua[i] ^ ub[i]) & (va[i] ^ vb[i]))
+			// ua[i] = rand.Intn(MAX_BOOL)
+			// ub[i] = rand.Intn(MAX_BOOL)
+			// va[i] = rand.Intn(MAX_BOOL)
+			// vb[i] = rand.Intn(MAX_BOOL)
+			// wa[i] = rand.Intn(MAX_BOOL)
+			ua[i] = RandBigDec()
+			ub[i] = RandBigDec()
+			va[i] = RandBigDec()
+			vb[i] = RandBigDec()
+			wa[i] = RandBigDec()
+			// wb[i] = wa[i] ^ ((ua[i] ^ ub[i]) & (va[i] ^ vb[i]))
+			wb[i] = Add(wa[i], Mul(Add(ua[i], ub[i]), Add(va[i], vb[i])))
 		}
 	}
 	return dealer{ua, ub, va, vb, wa, wb}
 }
 
-func (d *dealer) randA() ([]int, []int, []int) {
+func (d *dealer) randA() ([]BigDec, []BigDec, []BigDec) {
 	return d.ua, d.va, d.wa
 }
 
-func (d *dealer) randB() ([]int, []int, []int) {
+func (d *dealer) randB() ([]BigDec, []BigDec, []BigDec) {
 	return d.ub, d.vb, d.wb
 }
 
-func send(p party) []int {
+func send(p party) []BigDec {
 	for !p.isSending() {
 		if p.isReceiving() {
-			data := make([]int, 0)
+			data := make([]BigDec, 0)
 			return data
 		}
 		p.handleLocalGates()
@@ -56,7 +60,7 @@ func send(p party) []int {
 	return p.handleSending()
 }
 
-func receive(p party, data []int) {
+func receive(p party, data []BigDec) {
 	for !p.isReceiving() {
 		if p.isSending() {
 			return
