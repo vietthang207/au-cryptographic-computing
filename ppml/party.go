@@ -23,30 +23,16 @@ func initDealer(circuit circuit) dealer {
 	wb := make([]BigDec, circuitSize)
 
 	for i := 0; i < circuitSize; i++ {
-		if gates[i] == And2Wires {
-			// ua[i] = rand.Intn(MAX_BOOL)
-			// ub[i] = rand.Intn(MAX_BOOL)
-			// va[i] = rand.Intn(MAX_BOOL)
-			// vb[i] = rand.Intn(MAX_BOOL)
-			// wa[i] = rand.Intn(MAX_BOOL)
-			ua[i] = RandBigDec()
-			ub[i] = RandBigDec()
-			va[i] = RandBigDec()
-			vb[i] = RandBigDec()
-			wa[i] = RandBigDec()
-			// wb[i] = wa[i] ^ ((ua[i] ^ ub[i]) & (va[i] ^ vb[i]))
+		if gates[i] == Mul2Wires {
+			ua[i] = RandBoolBigDec()
+			ub[i] = RandBoolBigDec()
+			va[i] = RandBoolBigDec()
+			vb[i] = RandBoolBigDec()
+			wa[i] = RandBoolBigDec()
 			wb[i] = Add(wa[i], Mul(Add(ua[i], ub[i]), Add(va[i], vb[i])))
 		}
 	}
 	return dealer{ua, ub, va, vb, wa, wb}
-}
-
-func (d *dealer) randA() ([]BigDec, []BigDec, []BigDec) {
-	return d.ua, d.va, d.wa
-}
-
-func (d *dealer) randB() ([]BigDec, []BigDec, []BigDec) {
-	return d.ub, d.vb, d.wb
 }
 
 func send(p party) []BigDec {

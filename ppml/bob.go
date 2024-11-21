@@ -33,7 +33,7 @@ func initBob(circuit circuit, bitmask int, dealer dealer) bob {
 
 func (b *bob) isSending() bool {
 	switch b.circuit.gates[b.currentWire] {
-	case InputB, And2Wires, Output:
+	case InputB, Mul2Wires, Output:
 		return true
 	}
 	return false
@@ -41,7 +41,7 @@ func (b *bob) isSending() bool {
 
 func (b *bob) isReceiving() bool {
 	switch b.circuit.gates[b.currentWire] {
-	case InputA, And2Wires:
+	case InputA, Mul2Wires:
 		return true
 	}
 	return false
@@ -50,20 +50,19 @@ func (b *bob) isReceiving() bool {
 func (b *bob) handleSending() []BigDec {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
-	firstFanin := b.circuit.firstInputs[currentWire]
-	secondFanin := b.circuit.secondInputs[currentWire]
+	firstInput := b.circuit.firstInputs[currentWire]
+	secondInput := b.circuit.secondInputs[currentWire]
 	data := make([]BigDec, 0)
 	switch gate {
 	case InputB:
-		xa := RandBigDec()
-		xb := Add(b.y[firstFanin], xa)
+		xa := RandBoolBigDec()
+		xb := Add(b.y[firstInput], xa)
 		b.wires[currentWire] = xb
 		b.currentWire++
 		return append(data, xa)
-	case And2Wires:
-		db := Add(b.wires[firstFanin], b.ub[currentWire])
-		eb := Add(b.wires[secondFanin], b.vb[currentWire])
-		//bitmask := db<<1 + eb
+	case Mul2Wires:
+		db := Add(b.wires[firstInput], b.ub[currentWire])
+		eb := Add(b.wires[secondInput], b.vb[currentWire])
 		data = append(data, db)
 		data = append(data, eb)
 		b.currentWire++
@@ -79,37 +78,37 @@ func (b *bob) handleSending() []BigDec {
 func (b *bob) handleReceiving(data []BigDec) {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
-	firstFanin := b.circuit.firstInputs[currentWire]
-	secondFanin := b.circuit.secondInputs[currentWire]
+	firstInput := b.circuit.firstInputs[currentWire]
+	secondInput := b.circuit.secondInputs[currentWire]
 	switch gate {
 	case InputA:
 		b.wires[currentWire] = data[0]
 		b.currentWire++
-	case And2Wires:
+	case Mul2Wires:
 		da := data[0]
 		ea := data[1]
-		db := Add(b.wires[firstFanin], b.ub[currentWire])
-		eb := Add(b.wires[secondFanin], b.vb[currentWire])
+		db := Add(b.wires[firstInput], b.ub[currentWire])
+		eb := Add(b.wires[secondInput], b.vb[currentWire])
 		d := Add(da, db)
 		e := Add(ea, eb)
 		//Different from Alice: no ^ (e & d)
-		b.wires[currentWire] = Add(b.wb[currentWire], Add(Mul(e, b.wires[firstFanin]), Mul(d, b.wires[secondFanin])))
+		b.wires[currentWire] = Add(b.wb[currentWire], Add(Mul(e, b.wires[firstInput]), Mul(d, b.wires[secondInput])))
 	}
 }
 
 func (b *bob) handleLocalGates() {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
-	firstFanin := b.circuit.firstInputs[currentWire]
-	secondFanin := b.circuit.secondInputs[currentWire]
+	firstInput := b.circuit.firstInputs[currentWire]
+	secondInput := b.circuit.secondInputs[currentWire]
 	switch gate {
 	case AddConst:
 		//Different from Alice: no ^ c
-		b.wires[currentWire] = b.wires[firstFanin]
-	case AndConst:
-		b.wires[currentWire] = Mul(b.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
-	case Xor2Wires:
-		b.wires[currentWire] = Add(b.wires[firstFanin], b.wires[secondFanin])
+		b.wires[currentWire] = b.wires[firstInput]
+	case MulConst:
+		b.wires[currentWire] = Mul(b.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+	case Add2Wires:
+		b.wires[currentWire] = Add(b.wires[firstInput], b.wires[secondInput])
 	}
 	b.currentWire++
 }

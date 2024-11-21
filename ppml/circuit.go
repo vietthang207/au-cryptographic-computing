@@ -1,19 +1,19 @@
 package ppml
 
-type LogicGate int
+type ArithGate int
 
 const (
-	InputA LogicGate = iota
+	InputA ArithGate = iota
 	InputB
 	Output
 	AddConst
-	AndConst
-	Xor2Wires
-	And2Wires
+	MulConst
+	Add2Wires
+	Mul2Wires
 )
 
 type circuit struct {
-	gates        []LogicGate
+	gates        []ArithGate
 	firstInputs  []int
 	secondInputs []int //this is index, so use int
 }

@@ -1,7 +1,5 @@
 package ppml
 
-import "math/rand"
-
 type alice struct {
 	circuit     circuit
 	x           []BigDec
@@ -35,7 +33,7 @@ func initAlice(circuit circuit, bitmask int, dealer dealer) alice {
 
 func (a *alice) isSending() bool {
 	switch a.circuit.gates[a.currentWire] {
-	case InputA, And2Wires:
+	case InputA, Mul2Wires:
 		return true
 	}
 	return false
@@ -43,7 +41,7 @@ func (a *alice) isSending() bool {
 
 func (a *alice) isReceiving() bool {
 	switch a.circuit.gates[a.currentWire] {
-	case InputB, And2Wires, Output:
+	case InputB, Mul2Wires, Output:
 		return true
 	}
 	return false
@@ -52,15 +50,15 @@ func (a *alice) isReceiving() bool {
 func (a *alice) handleLocalGates() {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
-	firstFanin := a.circuit.firstInputs[currentWire]
-	secondFanin := a.circuit.secondInputs[currentWire]
+	firstInput := a.circuit.firstInputs[currentWire]
+	secondInput := a.circuit.secondInputs[currentWire]
 	switch gate {
 	case AddConst:
-		a.wires[currentWire] = Add(a.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
-	case AndConst:
-		a.wires[currentWire] = Mul(a.wires[firstFanin], IntToBigDecDefaultScalar(secondFanin))
-	case Xor2Wires:
-		a.wires[currentWire] = Add(a.wires[firstFanin], a.wires[secondFanin])
+		a.wires[currentWire] = Add(a.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+	case MulConst:
+		a.wires[currentWire] = Mul(a.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+	case Add2Wires:
+		a.wires[currentWire] = Add(a.wires[firstInput], a.wires[secondInput])
 	}
 	a.currentWire++
 }
@@ -68,20 +66,19 @@ func (a *alice) handleLocalGates() {
 func (a *alice) handleSending() []BigDec {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
-	firstFanin := a.circuit.firstInputs[currentWire]
-	secondFanin := a.circuit.secondInputs[currentWire]
+	firstInput := a.circuit.firstInputs[currentWire]
+	secondInput := a.circuit.secondInputs[currentWire]
 	data := make([]BigDec, 0)
 	switch gate {
 	case InputA:
-		xb := IntToBigDecDefaultScalar(rand.Intn(MAX_BOOL))
-		xa := Add(a.x[firstFanin], xb)
+		xb := RandBoolBigDec()
+		xa := Add(a.x[firstInput], xb)
 		a.wires[currentWire] = xa
 		a.currentWire++
 		return append(data, xb)
-	case And2Wires:
-		da := Add(a.wires[firstFanin], a.ua[currentWire])
-		ea := Add(a.wires[secondFanin], a.va[currentWire])
-		// bitmask := da<<1 + ea
+	case Mul2Wires:
+		da := Add(a.wires[firstInput], a.ua[currentWire])
+		ea := Add(a.wires[secondInput], a.va[currentWire])
 		data = append(data, da)
 		data = append(data, ea)
 		return data
@@ -93,20 +90,20 @@ func (a *alice) handleSending() []BigDec {
 func (a *alice) handleReceiving(data []BigDec) {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
-	firstFanin := a.circuit.firstInputs[currentWire]
-	secondFanin := a.circuit.secondInputs[currentWire]
+	firstInput := a.circuit.firstInputs[currentWire]
+	secondInput := a.circuit.secondInputs[currentWire]
 	switch gate {
 	case InputB:
 		a.wires[currentWire] = data[0]
 		a.currentWire++
-	case And2Wires:
+	case Mul2Wires:
 		db := data[0]
 		eb := data[1]
-		da := Add(a.wires[firstFanin], a.ua[currentWire])
-		ea := Add(a.wires[secondFanin], a.va[currentWire])
+		da := Add(a.wires[firstInput], a.ua[currentWire])
+		ea := Add(a.wires[secondInput], a.va[currentWire])
 		d := Add(da, db)
 		e := Add(ea, eb)
-		a.wires[currentWire] = Add(a.wa[currentWire], Add(Mul(e, a.wires[firstFanin]), Add(Mul(d, a.wires[secondFanin]), Mul(e, d))))
+		a.wires[currentWire] = Add(a.wa[currentWire], Add(Mul(e, a.wires[firstInput]), Add(Mul(d, a.wires[secondInput]), Mul(e, d))))
 		a.currentWire++
 	case Output:
 		a.wires[currentWire] = Add(a.wires[currentWire-1], data[0])
@@ -123,7 +120,8 @@ func (a *alice) hasOutput() bool {
 }
 
 func (a *alice) output() int {
-	// ret := a.wires[a.currentWire-1]
 	ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
+	// ret := a.wires[a.currentWire-1]
+	// fmt.Println(ret.integral)
 	return (&ret).GetScaledInt()
 }

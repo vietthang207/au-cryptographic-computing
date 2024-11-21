@@ -43,20 +43,20 @@ func Mod(x BigDec, y BigDec) BigDec {
 	return BigDec{integral: x.integral % y.integral, scalar: x.scalar}
 }
 
-func RandBigDec() BigDec {
-	return BigDec{integral: rand.Intn(MAX_RAND), scalar: DEFAULT_SCALAR}
+func RandBoolBigDec() BigDec {
+	return BigDec{integral: rand.Intn(MAX_RAND) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func One() BigDec {
-	return BigDec{integral: 1, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: 1 * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func Zero() BigDec {
-	return BigDec{integral: 0, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: 0 * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func IntToBigDecDefaultScalar(x int) BigDec {
-	return BigDec{integral: x, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: x * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func FloatToBigDec(xf float32, scalar int) BigDec {
