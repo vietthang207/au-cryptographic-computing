@@ -3,13 +3,13 @@ package ppml
 import "math/rand"
 
 const MAX_BOOL = 2
-const DEFAULT_SCALAR = 1
+const DEFAULT_SCALAR = 100
 
 type BigDec struct {
-	integral int
+	integral int64
 	// We use the convention that "scalar" is the inverse of the scalar, so scalar=100 represents a 1/100th scale
 	// - meaning that we divide by the scalar instead of multiplying when the representation is needed
-	scalar int
+	scalar int64
 }
 
 func CheckScalarDifference(x BigDec, y BigDec) {
@@ -30,21 +30,21 @@ func Sub(x BigDec, y BigDec) BigDec {
 
 func Mul(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
-	return BigDec{integral: x.integral * y.integral, scalar: x.scalar}
+	return BigDec{integral: (x.integral / x.scalar) * y.integral, scalar: x.scalar}
 }
 
 func Div(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
-	return BigDec{integral: x.integral / y.integral, scalar: x.scalar}
+	return BigDec{integral: x.integral / y.integral * x.scalar, scalar: x.scalar}
 }
 
 func Mod(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
-	return BigDec{integral: x.integral % y.integral, scalar: x.scalar}
+	return BigDec{integral: (x.integral / x.scalar) % (y.integral / y.scalar) * x.scalar, scalar: x.scalar}
 }
 
 func RandBoolBigDec() BigDec {
-	return BigDec{integral: rand.Intn(MAX_BOOL) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: int64(rand.Intn(MAX_BOOL)) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func One() BigDec {
@@ -56,12 +56,12 @@ func Zero() BigDec {
 }
 
 func IntToBigDecDefaultScalar(x int) BigDec {
-	return BigDec{integral: x * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: int64(x) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func FloatToBigDec(xf float32, scalar int) BigDec {
 	x := int(xf * float32(scalar))
-	return BigDec{x, scalar}
+	return BigDec{int64(x), int64(scalar)}
 }
 
 func (x *BigDec) ToFloat() float32 {
@@ -69,5 +69,5 @@ func (x *BigDec) ToFloat() float32 {
 }
 
 func (x *BigDec) GetScaledInt() int {
-	return x.integral / x.scalar
+	return int(x.integral / x.scalar)
 }

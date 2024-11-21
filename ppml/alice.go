@@ -122,6 +122,6 @@ func (a *alice) hasOutput() bool {
 func (a *alice) output() int {
 	ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
 	// ret := a.wires[a.currentWire-1]
-	// fmt.Println(ret.integral)
+	// fmt.Println(a.wires[a.currentWire-1].integral)
 	return (&ret).GetScaledInt()
 }
