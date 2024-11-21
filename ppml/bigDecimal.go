@@ -2,7 +2,7 @@ package ppml
 
 import "math/rand"
 
-const MAX_RAND = 2
+const MAX_BOOL = 2
 const DEFAULT_SCALAR = 1
 
 type BigDec struct {
@@ -44,7 +44,7 @@ func Mod(x BigDec, y BigDec) BigDec {
 }
 
 func RandBoolBigDec() BigDec {
-	return BigDec{integral: rand.Intn(MAX_RAND) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: rand.Intn(MAX_BOOL) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
 func One() BigDec {

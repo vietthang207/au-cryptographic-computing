@@ -52,7 +52,7 @@ func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
 }
 
 func Main() {
-	testBloodTypeTruthTable()
+	// testBloodTypeTruthTable()
 
 	//Circuit encoding convention:
 	//Gate                  | firstInput          | secondInput
