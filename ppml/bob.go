@@ -1,7 +1,5 @@
 package ppml
 
-import "math/rand"
-
 type bob struct {
 	circuit     circuit
 	y           []BigDec
@@ -54,17 +52,17 @@ func (b *bob) handleSending() []BigDec {
 	gate := b.circuit.gates[currentWire]
 	firstFanin := b.circuit.firstInputs[currentWire]
 	secondFanin := b.circuit.secondInputs[currentWire]
-	data := make([]int, 0)
+	data := make([]BigDec, 0)
 	switch gate {
 	case InputB:
-		xa := rand.Intn(MAX_BOOL)
-		xb := b.y[firstFanin] + xa
+		xa := RandBigDec()
+		xb := Add(b.y[firstFanin], xa)
 		b.wires[currentWire] = xb
 		b.currentWire++
 		return append(data, xa)
 	case And2Wires:
-		db := b.wires[firstFanin] + b.ub[currentWire]
-		eb := b.wires[secondFanin] + b.vb[currentWire]
+		db := Add(b.wires[firstFanin], b.ub[currentWire])
+		eb := Add(b.wires[secondFanin], b.vb[currentWire])
 		//bitmask := db<<1 + eb
 		data = append(data, db)
 		data = append(data, eb)
@@ -78,7 +76,7 @@ func (b *bob) handleSending() []BigDec {
 	}
 }
 
-func (b *bob) handleReceiving(data []int) {
+func (b *bob) handleReceiving(data []BigDec) {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
 	firstFanin := b.circuit.firstInputs[currentWire]
@@ -90,12 +88,12 @@ func (b *bob) handleReceiving(data []int) {
 	case And2Wires:
 		da := data[0]
 		ea := data[1]
-		db := b.wires[firstFanin] + b.ub[currentWire]
-		eb := b.wires[secondFanin] + b.vb[currentWire]
-		d := da + db
-		e := ea + eb
+		db := Add(b.wires[firstFanin], b.ub[currentWire])
+		eb := Add(b.wires[secondFanin], b.vb[currentWire])
+		d := Add(da, db)
+		e := Add(ea, eb)
 		//Different from Alice: no ^ (e & d)
-		b.wires[currentWire] = b.wb[currentWire] + (e * b.wires[firstFanin]) + (d * b.wires[secondFanin])
+		b.wires[currentWire] = Add(b.wb[currentWire], Add(Mul(e, b.wires[firstFanin]), Mul(d, b.wires[secondFanin])))
 	}
 }
 
@@ -114,5 +112,4 @@ func (b *bob) handleLocalGates() {
 		b.wires[currentWire] = Add(b.wires[firstFanin], b.wires[secondFanin])
 	}
 	b.currentWire++
-	return
 }

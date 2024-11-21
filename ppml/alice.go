@@ -63,7 +63,6 @@ func (a *alice) handleLocalGates() {
 		a.wires[currentWire] = Add(a.wires[firstFanin], a.wires[secondFanin])
 	}
 	a.currentWire++
-	return
 }
 
 func (a *alice) handleSending() []BigDec {
@@ -71,17 +70,17 @@ func (a *alice) handleSending() []BigDec {
 	gate := a.circuit.gates[currentWire]
 	firstFanin := a.circuit.firstInputs[currentWire]
 	secondFanin := a.circuit.secondInputs[currentWire]
-	data := make([]int, 0)
+	data := make([]BigDec, 0)
 	switch gate {
 	case InputA:
 		xb := IntToBigDecDefaultScalar(rand.Intn(MAX_BOOL))
-		xa := a.x[firstFanin] + xb
+		xa := Add(a.x[firstFanin], xb)
 		a.wires[currentWire] = xa
 		a.currentWire++
 		return append(data, xb)
 	case And2Wires:
-		da := a.wires[firstFanin] + a.ua[currentWire]
-		ea := a.wires[secondFanin] + a.va[currentWire]
+		da := Add(a.wires[firstFanin], a.ua[currentWire])
+		ea := Add(a.wires[secondFanin], a.va[currentWire])
 		// bitmask := da<<1 + ea
 		data = append(data, da)
 		data = append(data, ea)
@@ -91,7 +90,7 @@ func (a *alice) handleSending() []BigDec {
 	}
 }
 
-func (a *alice) handleReceiving(data []int) {
+func (a *alice) handleReceiving(data []BigDec) {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
 	firstFanin := a.circuit.firstInputs[currentWire]
@@ -103,14 +102,14 @@ func (a *alice) handleReceiving(data []int) {
 	case And2Wires:
 		db := data[0]
 		eb := data[1]
-		da := a.wires[firstFanin] + a.ua[currentWire]
-		ea := a.wires[secondFanin] + a.va[currentWire]
-		d := da + db
-		e := ea + eb
-		a.wires[currentWire] = a.wa[currentWire] + (e * a.wires[firstFanin]) + (d * a.wires[secondFanin]) + (e * d)
+		da := Add(a.wires[firstFanin], a.ua[currentWire])
+		ea := Add(a.wires[secondFanin], a.va[currentWire])
+		d := Add(da, db)
+		e := Add(ea, eb)
+		a.wires[currentWire] = Add(a.wa[currentWire], Add(Mul(e, a.wires[firstFanin]), Add(Mul(d, a.wires[secondFanin]), Mul(e, d))))
 		a.currentWire++
 	case Output:
-		a.wires[currentWire] = a.wires[currentWire-1] + data[0]
+		a.wires[currentWire] = Add(a.wires[currentWire-1], data[0])
 		a.currentWire++
 	}
 }
@@ -124,5 +123,7 @@ func (a *alice) hasOutput() bool {
 }
 
 func (a *alice) output() int {
-	return a.wires[a.currentWire-1] % 2
+	// ret := a.wires[a.currentWire-1]
+	ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
+	return (&ret).GetScaledInt()
 }

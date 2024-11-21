@@ -40,7 +40,6 @@ func testBloodTypeTruthTable() {
 			fmt.Println(printBloodType(x), " ", printBloodType(y), " ", bloodTypeTruthTable(x, y))
 		}
 	}
-	return
 }
 
 func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
