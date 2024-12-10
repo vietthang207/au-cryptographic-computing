@@ -59,15 +59,23 @@ func IntToBigDecDefaultScalar(x int) BigDec {
 	return BigDec{integral: int64(x) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 }
 
-func FloatToBigDec(xf float32, scalar int) BigDec {
-	x := int(xf * float32(scalar))
+func FloatToBigDec(xf float64, scalar int) BigDec {
+	x := int(xf * float64(scalar))
 	return BigDec{int64(x), int64(scalar)}
 }
 
-func (x *BigDec) ToFloat() float32 {
-	return float32(float32(x.integral) / float32(x.scalar))
+func (x *BigDec) ToFloat() float64 {
+	return float64(float64(x.integral) / float64(x.scalar))
 }
 
 func (x *BigDec) GetScaledInt() int {
 	return int(x.integral / x.scalar)
+}
+
+func FloatArrayToBigDec(array []float64, scalar int) []BigDec {
+	res := make([]BigDec, len(array))
+	for idx, f := range array {
+		res[idx] = FloatToBigDec(f, scalar)
+	}
+	return res
 }
