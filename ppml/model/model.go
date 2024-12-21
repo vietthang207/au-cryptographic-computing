@@ -1,6 +1,7 @@
 package model
 
 import (
+	"PPML/ppml/datasets"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -30,12 +31,12 @@ func sigmoid(x float64) float64 {
 	return 1 / (1 + math.Exp(-x))
 }
 
-func predict(weights [][]float64, input []float64) float64 {
+func predict(weights LogRegression, input []float64) float64 {
 	z := 0.0
-	for i := 0; i < len(weights[0]); i++ {
-		z += weights[0][i] * input[i] // Dot product
+	for i := 0; i < len(weights.W); i++ {
+		z += weights.W[i] * input[i] // Dot product
 	}
-	z += weights[1][0] // Add bias term
+	z += weights.B[0] // Add bias term
 	return sigmoid(z)
 }
 
@@ -45,8 +46,17 @@ func TestModel() {
 	weights := LoadModel(path.Join(wd, "/ppml/model/model_weights.json"))
 	fmt.Println("weights length: ", len(weights.W))
 	fmt.Println("bias length: ", len(weights.B))
+
 	// TODO: load real MNIST data to test
-	// input := make([]float64, 784)
-	// prediction := predict(weights, input)
-	// fmt.Printf("Prediction: %.2f\n", prediction)
+	images, labels := datasets.LoadTestsetFor01()
+	numTest := len(images)
+	correctPrediction := 0
+	for i := 0; i < numTest; i++ {
+		prediction := int(math.Round(predict(weights, images[i])))
+		if prediction == labels[i] {
+			correctPrediction += 1
+		}
+	}
+	accuracy := float64(correctPrediction) / float64(numTest)
+	fmt.Println("Accuracy: ", accuracy)
 }
