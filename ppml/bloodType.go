@@ -1,6 +1,9 @@
 package ppml
 
-import "fmt"
+import (
+	"PPML/ppml/model"
+	"fmt"
+)
 
 const TABLE_SIZE = 8
 
@@ -53,6 +56,7 @@ func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
 
 func Main() {
 	// testBloodTypeTruthTable()
+	model.TestModel()
 
 	//Circuit encoding convention:
 	//Gate                  | firstInput          | secondInput
