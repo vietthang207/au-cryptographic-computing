@@ -8,8 +8,8 @@ import (
 )
 
 type LogRegression struct {
-	w [][]float64
-	b []float64
+	W []float64 `json:"w"`
+	B []float64 `json:"b"`
 }
 
 func LoadModel(weightsFilename string) LogRegression {
@@ -40,10 +40,11 @@ func predict(weights [][]float64, input []float64) float64 {
 }
 
 func TestModel() {
-	weights := LoadModel("model_weights.json")
-	fmt.Println("weights length: ", len(weights.w))
-	fmt.Println("bias length: ", len(weights.b))
-
+	path, _ := os.Getwd()
+	fmt.Println(path)
+	weights := LoadModel(path + "\\ppml\\model\\model_weights.json")
+	fmt.Println("weights length: ", len(weights.W))
+	fmt.Println("bias length: ", len(weights.B))
 	// TODO: load real MNIST data to test
 	// input := make([]float64, 784)
 	// prediction := predict(weights, input)
