@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path"
 )
 
 type LogRegression struct {
@@ -40,9 +41,9 @@ func predict(weights [][]float64, input []float64) float64 {
 }
 
 func TestModel() {
-	path, _ := os.Getwd()
-	fmt.Println(path)
-	weights := LoadModel(path + "\\ppml\\model\\model_weights.json")
+	wd, _ := os.Getwd()
+	fmt.Println(wd)
+	weights := LoadModel(path.Join(wd, "/ppml/model/model_weights.json"))
 	fmt.Println("weights length: ", len(weights.W))
 	fmt.Println("bias length: ", len(weights.B))
 	// TODO: load real MNIST data to test
