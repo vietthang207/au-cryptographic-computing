@@ -1,6 +1,7 @@
 package ppml
 
 import (
+	"PPML/ppml/datasets"
 	"PPML/ppml/model"
 	"fmt"
 )
@@ -57,6 +58,7 @@ func simulateProtocol(circuit circuit, x int, y int, d dealer) int {
 func Main() {
 	// testBloodTypeTruthTable()
 	model.TestModel()
+	datasets.LoadTestset()
 
 	//Circuit encoding convention:
 	//Gate                  | firstInput          | secondInput

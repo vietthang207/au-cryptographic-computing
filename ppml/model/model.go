@@ -22,9 +22,8 @@ func LoadModel(weightsFilename string) LogRegression {
 		fmt.Println(err)
 		panic(err)
 	}
-	weights := data
 
-	return weights
+	return data
 }
 
 func sigmoid(x float64) float64 {
