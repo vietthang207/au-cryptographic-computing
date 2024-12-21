@@ -33,7 +33,8 @@ func LoadTestset() ([][]float64, []int) {
 	return images, labels
 }
 
-func LoadTestsetFor01() ([][]float64, []int) {
+// Only using 0 and 1 digits
+func LoadTestsetFor0And1() ([][]float64, []int) {
 	images, labels := LoadTestset()
 
 	images01 := make([][]float64, 0, 2000)
