@@ -20,12 +20,8 @@ func getAliceInputSize(circuit circuit) int {
 	return inputASize
 }
 
-func initAlice(circuit circuit, bitmask int, dealer dealer) alice {
-	aliceInputSize := getAliceInputSize(circuit)
-	x := make([]BigDec, aliceInputSize)
-	for i := 0; i < aliceInputSize; i++ {
-		x[aliceInputSize-i-1] = IntToBigDecDefaultScalar((bitmask & (1 << i)) >> i)
-	}
+func initAlice(circuit circuit, img []float64, dealer dealer) alice {
+	x := FloatArrayToBigDec(img, DEFAULT_SCALAR)
 	wires := make([]BigDec, len(circuit.gates))
 
 	return alice{circuit: circuit, x: x, wires: wires, ua: dealer.ua, va: dealer.va, wa: dealer.wa}
@@ -119,9 +115,7 @@ func (a *alice) hasOutput() bool {
 	}
 }
 
-func (a *alice) output() int {
+func (a *alice) output() float64 {
 	ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
-	// ret := a.wires[a.currentWire-1]
-	// fmt.Println(a.wires[a.currentWire-1].integral)
-	return (&ret).GetScaledInt()
+	return (&ret).ToFloat()
 }

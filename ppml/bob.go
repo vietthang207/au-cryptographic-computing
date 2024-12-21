@@ -20,13 +20,9 @@ func getBobInputSize(circuit circuit) int {
 	return inputBSize
 }
 
-func initBob(circuit circuit, bitmask int, dealer dealer) bob {
-	bobInputSize := getBobInputSize(circuit)
-
-	y := make([]BigDec, bobInputSize)
-	for i := 0; i < bobInputSize; i++ {
-		y[bobInputSize-i-1] = IntToBigDecDefaultScalar((bitmask & (1 << i)) >> i)
-	}
+func initBob(circuit circuit, weights []float64, dealer dealer) bob {
+	// bobInputSize := getBobInputSize(circuit)
+	y := FloatArrayToBigDec(weights, DEFAULT_SCALAR)
 	wires := make([]BigDec, len(circuit.gates))
 	return bob{circuit: circuit, y: y, wires: wires, ub: dealer.ub, vb: dealer.vb, wb: dealer.wb}
 }

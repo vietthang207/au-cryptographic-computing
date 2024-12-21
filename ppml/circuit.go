@@ -33,6 +33,19 @@ func PolyToCircuit(inputSize int, approxDegree int) circuit {
 	return circuit{gates: gates, firstInputs: firstInputs, secondInputs: secondInputs, constants: constants}
 }
 
+func PolyToDotProductCircuit(inputSize int) circuit {
+	g1, f1, s1 := getInputSubCircuit(inputSize)
+	g2, f2, s2 := getDotProductSubCircuit(inputSize)
+	g := append(g1, g2...)
+	f := append(f1, f2...)
+	s := append(s1, s2...)
+	g = append(g, Output)
+	f = append(f, 0)
+	s = append(s, 0)
+	constants := make([]BigDec, 0)
+	return circuit{gates: g, firstInputs: f, secondInputs: s, constants: constants}
+}
+
 func getInputSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
 	// var gates = []ArithGate{InputA, InputA, InputA, InputB, InputB, InputB}
 	// var firstInputs = []int{0, 1, 2, 0, 1, 2}
@@ -40,7 +53,16 @@ func getInputSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
 	gates := make([]ArithGate, inputSize*2)
 	firstInputs := make([]int, inputSize*2)
 	secondInputs := make([]int, inputSize*2)
-	//TODO: initialize inputs indices
+	for i := 0; i < inputSize; i++ {
+		gates[i] = InputA
+		firstInputs[i] = i
+		secondInputs[i] = 0
+	}
+	for i := 0; i < inputSize; i++ {
+		gates[inputSize+i] = InputB
+		firstInputs[inputSize+i] = i
+		secondInputs[i] = 0
+	}
 	return gates, firstInputs, secondInputs
 }
 
@@ -49,20 +71,25 @@ func getDotProductSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
 	gates := make([]ArithGate, inputSize*2)
 	firstInputs := make([]int, inputSize*2)
 	secondInputs := make([]int, inputSize*2)
+
+	//x[i]*w[i]
 	for i := 0; i < inputSize; i++ {
 		gates[i] = Mul2Wires
-		firstInputs[i] = offset + i
-		secondInputs[i] = offset + i + inputSize
+		firstInputs[i] = i
+		secondInputs[i] = i + inputSize
 	}
+
 	//TODO: change this to binary tree shape
+	// sum of x[i]*w[i]
 	gates[inputSize] = Add2Wires
 	firstInputs[inputSize] = offset
 	secondInputs[inputSize] = offset + 1
 	for i := 1; i < inputSize; i++ {
 		gates[inputSize+i] = Add2Wires
-		firstInputs[inputSize+i] = offset + inputSize + i
+		firstInputs[inputSize+i] = offset + inputSize + i - 1
 		secondInputs[inputSize+i] = offset + i + 1
 	}
+
 	return gates, firstInputs, secondInputs
 }
 

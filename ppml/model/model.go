@@ -14,10 +14,11 @@ type LogRegression struct {
 	B float64   `json:"b"`
 }
 
-func LoadModel(weightsFilename string) LogRegression {
-	weightsFile, _ := os.ReadFile(weightsFilename)
+func LoadModel() LogRegression {
+	wd, _ := os.Getwd()
+	weightsFile, _ := os.ReadFile(path.Join(wd, "/ppml/model/model_weights.json"))
 	var data LogRegression
-	fmt.Println(json.Valid(weightsFile))
+	// fmt.Println(json.Valid(weightsFile))
 	err := json.Unmarshal(weightsFile, &data)
 	if err != nil {
 		fmt.Println(err)
@@ -41,9 +42,7 @@ func predict(weights LogRegression, input []float64) float64 {
 }
 
 func TestModel() {
-	wd, _ := os.Getwd()
-	fmt.Println(wd)
-	weights := LoadModel(path.Join(wd, "/ppml/model/model_weights.json"))
+	weights := LoadModel()
 	fmt.Println("weights length: ", len(weights.W))
 	fmt.Println("bias: ", weights.B)
 
