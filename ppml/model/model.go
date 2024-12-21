@@ -7,13 +7,21 @@ import (
 	"os"
 )
 
-func LoadModel(weightsFilename string) [][]float64 {
+type LogRegression struct {
+	w [][]float64
+	b []float64
+}
+
+func LoadModel(weightsFilename string) LogRegression {
 	weightsFile, _ := os.ReadFile(weightsFilename)
-	var weights [][]float64
-	err := json.Unmarshal(weightsFile, &weights)
+	var data LogRegression
+	fmt.Println(json.Valid(weightsFile))
+	err := json.Unmarshal(weightsFile, &data)
 	if err != nil {
-		panic("Unmarshal err")
+		fmt.Println(err)
+		panic(err)
 	}
+	weights := data
 
 	return weights
 }
@@ -33,9 +41,8 @@ func predict(weights [][]float64, input []float64) float64 {
 
 func TestModel() {
 	weights := LoadModel("model_weights.json")
-	fmt.Println("model length: ", len(weights))
-	fmt.Println("weights length: ", len(weights[0]))
-	fmt.Println("bias length: ", len(weights[1]))
+	fmt.Println("weights length: ", len(weights.w))
+	fmt.Println("bias length: ", len(weights.b))
 
 	// TODO: load real MNIST data to test
 	// input := make([]float64, 784)
