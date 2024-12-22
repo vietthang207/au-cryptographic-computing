@@ -116,6 +116,8 @@ func (a *alice) hasOutput() bool {
 }
 
 func (a *alice) output() float64 {
-	ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
+	// ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
+	ret := a.wires[a.currentWire-1]
+	// fmt.Println("alice output: ", (&ret).ToFloat())
 	return (&ret).ToFloat()
 }
