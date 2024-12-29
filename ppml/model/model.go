@@ -41,10 +41,25 @@ func predict(weights LogRegression, input []float64) float64 {
 	return sigmoid(z)
 }
 
+func printWeightRange(weights LogRegression) {
+	minWeight := 0.0
+	maxWeight := 0.0
+	for i := 0; i < len(weights.W); i++ {
+		minWeight = math.Min(minWeight, weights.W[i])
+		maxWeight = math.Max(maxWeight, weights.W[i])
+	}
+
+	minWeight = math.Min(minWeight, weights.B)
+	maxWeight = math.Max(maxWeight, weights.B)
+	fmt.Println("Min weight: ", minWeight)
+	fmt.Println("Max weight: ", maxWeight)
+}
+
 func TestModel() {
 	weights := LoadModel()
 	fmt.Println("weights length: ", len(weights.W))
 	fmt.Println("bias: ", weights.B)
+	printWeightRange(weights)
 
 	images, labels := datasets.LoadTestsetFor0And1()
 	numTest := len(images)

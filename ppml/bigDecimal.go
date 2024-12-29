@@ -6,7 +6,7 @@ import (
 )
 
 const MAX_RAND = 128
-const DEFAULT_SCALAR = 100
+const DEFAULT_SCALAR = 10000
 
 type BigDec struct {
 	integral *big.Int
