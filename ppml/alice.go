@@ -67,7 +67,7 @@ func (a *alice) handleSending() []BigDec {
 	data := make([]BigDec, 0)
 	switch gate {
 	case InputA:
-		xb := RandBoolBigDec()
+		xb := RandForDealer()
 		xa := Sub(a.x[firstInput], xb)
 		a.wires[currentWire] = xa
 		a.currentWire++
@@ -102,6 +102,8 @@ func (a *alice) handleReceiving(data []BigDec) {
 		a.wires[currentWire] = Sub(a.wa[currentWire], Add(Mul(e, a.wires[firstInput]), Add(Mul(d, a.wires[secondInput]), Mul(e, d))))
 		a.currentWire++
 	case Output:
+		// fmt.Println("oa: ", a.wires[currentWire-1].integral)
+		// fmt.Println("ob: ", data[0].integral)
 		a.wires[currentWire] = Add(a.wires[currentWire-1], data[0])
 		a.currentWire++
 	}
@@ -118,6 +120,6 @@ func (a *alice) hasOutput() bool {
 func (a *alice) output() float64 {
 	// ret := Mod(a.wires[a.currentWire-1], IntToBigDecDefaultScalar(2))
 	ret := a.wires[a.currentWire-1]
-	// fmt.Println("alice output: ", (&ret).ToFloat())
-	return (&ret).ToFloat()
+	// fmt.Println("alice output: ", ret.ToFloat())
+	return ret.ToFloat()
 }

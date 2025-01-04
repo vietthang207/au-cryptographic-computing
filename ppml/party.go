@@ -24,12 +24,13 @@ func initDealer(circuit circuit) dealer {
 
 	for i := 0; i < circuitSize; i++ {
 		if gates[i] == Mul2Wires {
-			ua[i] = RandBoolBigDec()
-			ub[i] = RandBoolBigDec()
-			va[i] = RandBoolBigDec()
-			vb[i] = RandBoolBigDec()
-			wa[i] = RandBoolBigDec()
-			wb[i] = Add(wa[i], Mul(Add(ua[i], ub[i]), Add(va[i], vb[i])))
+			ua[i] = RandForDealer()
+			ub[i] = RandForDealer()
+			va[i] = RandForDealer()
+			vb[i] = RandForDealer()
+			wa[i] = RandForDealer()
+			// wb[i] = Add(wa[i], Mul(Add(ua[i], ub[i]), Add(va[i], vb[i])))
+			wb[i] = Sub(Mul(Add(ua[i], ub[i]), Add(va[i], vb[i])), wa[i])
 		}
 	}
 	return dealer{ua, ub, va, vb, wa, wb}

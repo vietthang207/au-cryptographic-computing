@@ -51,7 +51,7 @@ func (b *bob) handleSending() []BigDec {
 	data := make([]BigDec, 0)
 	switch gate {
 	case InputB:
-		xa := RandBoolBigDec()
+		xa := RandForDealer()
 		xb := Sub(b.y[firstInput], xa)
 		b.wires[currentWire] = xb
 		b.currentWire++

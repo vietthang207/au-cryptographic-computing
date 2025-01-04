@@ -5,9 +5,16 @@ import (
 	"math/rand"
 )
 
-const MAX_RAND = 512
-const DEFAULT_SCALAR = 100000
-const MODULUS = 8192
+// 2^l_D
+const DEFAULT_SCALAR = 1 << 13
+
+// 2^l
+const MAX_INTEGRAL = 1 << 20
+
+const MODULUS = 2 * MAX_INTEGRAL
+
+const SECRET_SHARE_MAX_RAND = MODULUS
+const DEALER_MAX_RAND = 1 << 7
 
 type BigDec struct {
 	integral *big.Int
@@ -26,8 +33,8 @@ func Add(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
 	resIntegral := new(big.Int)
 	resIntegral.Add(x.integral, y.integral)
-	// modulus := big.NewInt(MODULUS)
-	// resIntegral.Mod(resIntegral, modulus)
+	modulus := big.NewInt(MODULUS)
+	resIntegral.Mod(resIntegral, modulus)
 	return BigDec{integral: resIntegral, scalar: x.scalar}
 }
 
@@ -35,18 +42,43 @@ func Sub(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
 	resIntegral := new(big.Int)
 	resIntegral.Sub(x.integral, y.integral)
-	// modulus := big.NewInt(MODULUS)
-	// resIntegral.Mod(resIntegral, modulus)
+	modulus := big.NewInt(MODULUS)
+	resIntegral.Mod(resIntegral, modulus)
 	return BigDec{integral: resIntegral, scalar: x.scalar}
+}
+
+func isNegative(x BigDec) bool {
+	// fmt.Println("x.integral: ", x.integral)
+	// fmt.Println("max_integral: ", MAX_INTEGRAL)
+	// fmt.Println(x.integral.Cmp(big.NewInt(MAX_INTEGRAL)))
+	return x.integral.Cmp(big.NewInt(MAX_INTEGRAL)) > 0
 }
 
 func Mul(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
+	sign := 1
+	modulus := big.NewInt(MODULUS)
+	xTmp := new(big.Int).Set(x.integral)
+	yTmp := new(big.Int).Set(y.integral)
+	// TODO: check the case x or y = 0
+	if isNegative(x) {
+		sign *= -1
+		// fmt.Println("Max integral: ", MAX_INTEGRAL)
+		// fmt.Println("before: ", x.integral)
+		xTmp.Sub(modulus, x.integral)
+		// fmt.Println("after: ", x.integral)
+	}
+	if isNegative(y) {
+		sign *= -1
+		yTmp.Sub(modulus, y.integral)
+	}
 	resIntegral := new(big.Int)
-	resIntegral.Mul(x.integral, y.integral)
+	resIntegral.Mul(xTmp, yTmp)
 	resIntegral.Div(resIntegral, x.scalar)
-	// modulus := big.NewInt(MODULUS)
-	// resIntegral.Mod(resIntegral, modulus)
+	resIntegral.Mod(resIntegral, modulus)
+	if sign < 0 {
+		resIntegral.Sub(modulus, resIntegral)
+	}
 	return BigDec{integral: resIntegral, scalar: x.scalar}
 }
 
@@ -60,9 +92,14 @@ func Mul(x BigDec, y BigDec) BigDec {
 // 	return BigDec{integral: (x.integral / x.scalar) % (y.integral / y.scalar) * x.scalar, scalar: x.scalar}
 // }
 
-func RandBoolBigDec() BigDec {
+func RandForSecretShare() BigDec {
 	// return BigDec{integral: int64(rand.Intn(MAX_RAND)) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
-	return BigDec{integral: big.NewInt(rand.Int63n(MAX_RAND)), scalar: big.NewInt(DEFAULT_SCALAR)}
+	return BigDec{integral: big.NewInt(rand.Int63n(SECRET_SHARE_MAX_RAND)), scalar: big.NewInt(DEFAULT_SCALAR)}
+}
+
+func RandForDealer() BigDec {
+	// return BigDec{integral: int64(rand.Intn(MAX_RAND)) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
+	return BigDec{integral: big.NewInt(rand.Int63n(DEALER_MAX_RAND)), scalar: big.NewInt(DEFAULT_SCALAR)}
 }
 
 // func One() BigDec {
@@ -74,6 +111,7 @@ func RandBoolBigDec() BigDec {
 // }
 
 func IntToBigDecDefaultScalar(x int) BigDec {
+	//TODO: handle the case where x is negative
 	scalar := big.NewInt(DEFAULT_SCALAR)
 	integral := big.NewInt(int64(x))
 	integral.Mul(integral, scalar)
@@ -81,16 +119,38 @@ func IntToBigDecDefaultScalar(x int) BigDec {
 }
 
 func FloatToBigDec(xf float64, scalar int) BigDec {
+	modulus := big.NewInt(MODULUS)
 	xfBig := big.NewFloat(xf * float64(scalar))
 	x := new(big.Int)
 	xfBig.Int(x)
+	if xf <= 0 {
+		x.Add(modulus, x)
+	}
 	return BigDec{integral: x, scalar: big.NewInt(int64(scalar))}
 }
 
-func (x *BigDec) ToFloat() float64 {
+func (x BigDec) ToFloat() float64 {
 	// return float64(float64(x.integral) / float64(x.scalar))
-	integralFloat, _ := x.integral.Float64()
+	// fmt.Println("x.integral: ", x.integral)
+	modulus := big.NewInt(MODULUS)
+	integralFloat := 0.0
+	if isNegative(x) {
+		// fmt.Println("not else")
+		// fmt.Println(x.integral)
+		// fmt.Println(big.NewInt(MAX_INTEGRAL))
+		tmp := new(big.Int)
+		integralFloat, _ = tmp.Sub(modulus, x.integral).Float64()
+		// fmt.Println("integralFloat: ", integralFloat)
+		integralFloat = 0 - integralFloat
+		// fmt.Println("integralFloat: ", integralFloat)
+	} else {
+		// fmt.Println("else")
+		integralFloat, _ = x.integral.Float64()
+	}
 	scalarFloat, _ := x.scalar.Float64()
+	// fmt.Println("x.integral: ", x.integral)
+	// fmt.Println(MAX_INTEGRAL)
+	// fmt.Println("integralFloat: ", integralFloat)
 	return integralFloat / scalarFloat
 }
 

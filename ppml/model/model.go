@@ -36,6 +36,7 @@ func predict(weights LogRegression, input []float64) float64 {
 	z := 0.0
 	for i := 0; i < len(weights.W); i++ {
 		z += weights.W[i] * input[i] // Dot product
+		// fmt.Println(z)
 	}
 	z += weights.B // Add bias term
 	// fmt.Println(z)
@@ -45,15 +46,20 @@ func predict(weights LogRegression, input []float64) float64 {
 func printWeightRange(weights LogRegression) {
 	minWeight := 0.0
 	maxWeight := 0.0
+	numSmallWeights := 0
 	for i := 0; i < len(weights.W); i++ {
 		minWeight = math.Min(minWeight, weights.W[i])
 		maxWeight = math.Max(maxWeight, weights.W[i])
+		if math.Abs(weights.W[i]) <= 0.2 {
+			numSmallWeights++
+		}
 	}
 
 	minWeight = math.Min(minWeight, weights.B)
 	maxWeight = math.Max(maxWeight, weights.B)
 	fmt.Println("Min weight: ", minWeight)
 	fmt.Println("Max weight: ", maxWeight)
+	fmt.Println("number of small weight (|w| < 0.2): ", numSmallWeights)
 }
 
 func TestModel() {

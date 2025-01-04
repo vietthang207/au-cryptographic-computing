@@ -24,6 +24,13 @@ func simulateDotProductProtocol(circuit circuit, img []float64, modelWeights mod
 }
 
 func Main() {
+	// x := FloatToBigDec(-7, 100)
+	// y := FloatToBigDec(3, 100)
+	// z := Mul(x, y)
+	// fmt.Println("x: ", x.integral)
+	// fmt.Println("y: ", y.integral)
+	// fmt.Println("x.y: ", z.integral)
+	// fmt.Println("x.y float: ", z.ToFloat())
 	model.TestModel()
 	modelWeights := model.LoadModel()
 
