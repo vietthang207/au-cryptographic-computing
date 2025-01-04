@@ -5,8 +5,9 @@ import (
 	"math/rand"
 )
 
-const MAX_RAND = 128
-const DEFAULT_SCALAR = 10000
+const MAX_RAND = 512
+const DEFAULT_SCALAR = 100000
+const MODULUS = 8192
 
 type BigDec struct {
 	integral *big.Int
@@ -25,19 +26,27 @@ func Add(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
 	resIntegral := new(big.Int)
 	resIntegral.Add(x.integral, y.integral)
+	// modulus := big.NewInt(MODULUS)
+	// resIntegral.Mod(resIntegral, modulus)
 	return BigDec{integral: resIntegral, scalar: x.scalar}
 }
 
-// func Sub(x BigDec, y BigDec) BigDec {
-// 	CheckScalarDifference(x, y)
-// 	return BigDec{integral: x.integral - y.integral, scalar: x.scalar}
-// }
+func Sub(x BigDec, y BigDec) BigDec {
+	CheckScalarDifference(x, y)
+	resIntegral := new(big.Int)
+	resIntegral.Sub(x.integral, y.integral)
+	// modulus := big.NewInt(MODULUS)
+	// resIntegral.Mod(resIntegral, modulus)
+	return BigDec{integral: resIntegral, scalar: x.scalar}
+}
 
 func Mul(x BigDec, y BigDec) BigDec {
 	CheckScalarDifference(x, y)
 	resIntegral := new(big.Int)
 	resIntegral.Mul(x.integral, y.integral)
 	resIntegral.Div(resIntegral, x.scalar)
+	// modulus := big.NewInt(MODULUS)
+	// resIntegral.Mod(resIntegral, modulus)
 	return BigDec{integral: resIntegral, scalar: x.scalar}
 }
 

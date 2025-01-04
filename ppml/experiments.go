@@ -19,7 +19,7 @@ func simulateDotProductProtocol(circuit circuit, img []float64, modelWeights mod
 		receive(&a, send(&b))
 	}
 	dotProduct := a.output()
-	sigmoid := 1 / (1 + math.Exp(-dotProduct))
+	sigmoid := 1 / (1 + math.Exp(dotProduct))
 	return int(math.Round(sigmoid))
 }
 

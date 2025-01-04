@@ -68,7 +68,7 @@ func (a *alice) handleSending() []BigDec {
 	switch gate {
 	case InputA:
 		xb := RandBoolBigDec()
-		xa := Add(a.x[firstInput], xb)
+		xa := Sub(a.x[firstInput], xb)
 		a.wires[currentWire] = xa
 		a.currentWire++
 		return append(data, xb)
@@ -99,7 +99,7 @@ func (a *alice) handleReceiving(data []BigDec) {
 		ea := Add(a.wires[secondInput], a.va[currentWire])
 		d := Add(da, db)
 		e := Add(ea, eb)
-		a.wires[currentWire] = Add(a.wa[currentWire], Add(Mul(e, a.wires[firstInput]), Add(Mul(d, a.wires[secondInput]), Mul(e, d))))
+		a.wires[currentWire] = Sub(a.wa[currentWire], Add(Mul(e, a.wires[firstInput]), Add(Mul(d, a.wires[secondInput]), Mul(e, d))))
 		a.currentWire++
 	case Output:
 		a.wires[currentWire] = Add(a.wires[currentWire-1], data[0])

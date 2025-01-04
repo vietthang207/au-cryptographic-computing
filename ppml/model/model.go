@@ -38,6 +38,7 @@ func predict(weights LogRegression, input []float64) float64 {
 		z += weights.W[i] * input[i] // Dot product
 	}
 	z += weights.B // Add bias term
+	// fmt.Println(z)
 	return sigmoid(z)
 }
 
