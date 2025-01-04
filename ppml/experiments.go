@@ -31,6 +31,7 @@ func Main() {
 	// fmt.Println("y: ", y.integral)
 	// fmt.Println("x.y: ", z.integral)
 	// fmt.Println("x.y float: ", z.ToFloat())
+	TestCoefficient()
 	model.TestModel()
 	modelWeights := model.LoadModel()
 

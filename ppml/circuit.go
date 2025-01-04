@@ -1,5 +1,7 @@
 package ppml
 
+import "fmt"
+
 type ArithGate int
 
 const (
@@ -123,8 +125,54 @@ func getDotProductSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
 // 	return gates, firstInputs, secondInputs
 // }
 
-func getCoefficient(degree int) float64 {
+// func fact(n int) float64 {
+// 	if n == 0 {
+// 		return 1
+// 	}
+// 	return float64(n) * fact(n-1)
+// }
 
-	//TODO
-	return 1.0
+// func bernoulli(n int) float64 {
+// 	B := make([]float64, n+1)
+// 	A := make([]float64, n+1)
+
+// 	for m := 0; m <= n; m++ {
+// 		A[m] = 1.0 / float64(m+1)
+// 		for j := m; j > 0; j-- {
+// 			A[j-1] = float64(j) * (A[j-1] - A[j])
+// 		}
+// 		B[m] = A[0]
+// 	}
+
+// 	return B[n]
+// }
+
+// func getCoefficient(degree int) float64 {
+// 	if degree == 0 {
+// 		return 0.5
+// 	}
+// 	if degree == 1 {
+// 		return 0.25
+// 	}
+// 	if degree%2 == 0 {
+// 		return 0.0
+// 	}
+
+// 	tmp := (1<<(degree-1) - 1)
+// 	res := 0.25 * float64(tmp) * bernoulli(degree-1) / fact(degree)
+// 	if (degree-1)%2 == 1 {
+// 		res = -res
+// 	}
+// 	return res
+// }
+
+func getCoefficient(degree int) float64 {
+	coef := [10]float64{0.5, 0.25, 0, -1.0 / 48, 0, 1.0 / 480, 0, -17.0 / 80640, 0, 31.0 / 1451520}
+	return coef[degree]
+}
+
+func TestCoefficient() {
+	for i := 0; i < 10; i++ {
+		fmt.Println(getCoefficient(i))
+	}
 }
