@@ -96,14 +96,15 @@ func (b *bob) handleLocalGates() {
 	currentWire := b.currentWire
 	gate := b.circuit.gates[currentWire]
 	firstInput := b.circuit.firstInputs[currentWire]
-	secondInput := b.circuit.secondInputs[currentWire]
 	switch gate {
 	case AddConst:
 		//Different from Alice: no ^ c
 		b.wires[currentWire] = b.wires[firstInput]
 	case MulConst:
-		b.wires[currentWire] = Mul(b.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+		secondInput := b.circuit.constants[currentWire]
+		b.wires[currentWire] = Mul(b.wires[firstInput], secondInput)
 	case Add2Wires:
+		secondInput := b.circuit.secondInputs[currentWire]
 		b.wires[currentWire] = Add(b.wires[firstInput], b.wires[secondInput])
 	}
 	b.currentWire++

@@ -129,6 +129,10 @@ func FloatToBigDec(xf float64, scalar int) BigDec {
 	return BigDec{integral: x, scalar: big.NewInt(int64(scalar))}
 }
 
+func FloatToBigDecDefaultScalar(xf float64) BigDec {
+	return FloatToBigDec(xf, DEFAULT_SCALAR)
+}
+
 func (x BigDec) ToFloat() float64 {
 	// return float64(float64(x.integral) / float64(x.scalar))
 	// fmt.Println("x.integral: ", x.integral)

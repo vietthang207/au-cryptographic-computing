@@ -47,13 +47,15 @@ func (a *alice) handleLocalGates() {
 	currentWire := a.currentWire
 	gate := a.circuit.gates[currentWire]
 	firstInput := a.circuit.firstInputs[currentWire]
-	secondInput := a.circuit.secondInputs[currentWire]
 	switch gate {
 	case AddConst:
-		a.wires[currentWire] = Add(a.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+		secondInput := a.circuit.constants[currentWire]
+		a.wires[currentWire] = Add(a.wires[firstInput], secondInput)
 	case MulConst:
-		a.wires[currentWire] = Mul(a.wires[firstInput], IntToBigDecDefaultScalar(secondInput))
+		secondInput := a.circuit.constants[currentWire]
+		a.wires[currentWire] = Mul(a.wires[firstInput], secondInput)
 	case Add2Wires:
+		secondInput := a.circuit.secondInputs[currentWire]
 		a.wires[currentWire] = Add(a.wires[firstInput], a.wires[secondInput])
 	}
 	a.currentWire++
@@ -73,6 +75,8 @@ func (a *alice) handleSending() []BigDec {
 		a.currentWire++
 		return append(data, xb)
 	case Mul2Wires:
+		// fmt.Println("currentWire: ", currentWire)
+		// fmt.Println("firstInput: ", firstInput)
 		da := Add(a.wires[firstInput], a.ua[currentWire])
 		ea := Add(a.wires[secondInput], a.va[currentWire])
 		data = append(data, da)

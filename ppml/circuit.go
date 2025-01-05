@@ -22,17 +22,22 @@ type circuit struct {
 }
 
 func PolyToCircuit(inputSize int, approxDegree int) circuit {
-	//Circuit encoding convention:
-	//Gate                  | firstInput          | secondInput
-	//Input                 | index of input bit  | 0
-	//XOR/AND with constant | index of input wire | constant                   |
-	//Binary gate           | index of input wire | index of second input wire |
-	var gates = []ArithGate{InputA, InputA, InputA, InputB, InputB, InputB, AddConst, AddConst, AddConst, Mul2Wires, Mul2Wires, Mul2Wires, AddConst, AddConst, AddConst, Mul2Wires, Mul2Wires, Output}
-	var firstInputs = []int{0, 1, 2, 0, 1, 2, 0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 15, 0}
-	var secondInputs = []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 3, 4, 5, 1, 1, 1, 13, 14, 0}
-	var constant_floats = []float64{0, 0, 0, 0, 0, 0, 1, 1, 1, 3, 4, 5, 1, 1, 1, 13, 14, 0}
-	constants := FloatArrayToBigDec(constant_floats, DEFAULT_SCALAR)
-	return circuit{gates: gates, firstInputs: firstInputs, secondInputs: secondInputs, constants: constants}
+	g1, f1, s1 := getInputSubCircuit(inputSize)
+	g2, f2, s2 := getDotProductSubCircuit(inputSize)
+	g3, f3, s3, c3 := getPolynomialSubCircuit(inputSize, approxDegree)
+
+	g := append(append(g1, g2...), g3...)
+	f := append(append(f1, f2...), f3...)
+	s := append(append(s1, s2...), s3...)
+
+	constFloats := make([]float64, inputSize*4)
+	constFloats = append(constFloats, c3...)
+	constants := FloatArrayToBigDec(constFloats, DEFAULT_SCALAR)
+
+	g = append(g, Output)
+	f = append(f, 0)
+	s = append(s, 0)
+	return circuit{gates: g, firstInputs: f, secondInputs: s, constants: constants}
 }
 
 func PolyToDotProductCircuit(inputSize int) circuit {
@@ -95,35 +100,58 @@ func getDotProductSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
 	return gates, firstInputs, secondInputs
 }
 
-// func getPolynomialSubCircuit(inputSize int, approxDegree int) ([]ArithGate, []int, []int, []float64) {
-// 	// if approxDegree%2 == 0 {
-// 	// 	approxDegree = approxDegree - 1
-// 	// }
-// 	offset := inputSize * 4
+func getPolynomialSubCircuit(inputSize int, approxDegree int) ([]ArithGate, []int, []int, []float64) {
+	offset := inputSize * 4
 
-// 	size := (approxDegree +1)/2
-// 	gates := make([]ArithGate, inputSize*2) //TODO: this size is wrong
-// 	firstInputs := make([]int, inputSize*2)
-// 	secondInputs := make([]int, inputSize*2)
-// 	constants := make([]float64, inputSize*2)
+	size := 0
+	if approxDegree%2 == 0 {
+		size = approxDegree / 2
+	} else {
+		size = (approxDegree + 1) / 2
+	}
 
-// 	gates[0] = Mul2Wires //y^2
-// 	firstInputs[0] = offset - 1
-// 	secondInputs[0] = offset - 1
+	gates := make([]ArithGate, size*3)
+	firstInputs := make([]int, size*3)
+	secondInputs := make([]int, size*3)
+	constants := make([]float64, size*3)
 
-// 	gates[1] = Mul2Wires         //y^3
-// 	firstInputs[0] = offset      //y^2
-// 	secondInputs[0] = offset - 1 //y
+	gates[0] = Mul2Wires //y^2
+	firstInputs[0] = offset - 1
+	secondInputs[0] = offset - 1
 
-// 	for i := 2; i < (approxDegree+1)/2; i++ {
-// 		gates[i] = Mul2Wires
-// 		firstInputs[i] = offset //y^2
-// 		secondInputs[i] = offset + i - 1
-// 	}
+	gates[1] = Mul2Wires         //y^3
+	firstInputs[1] = offset      //y^2
+	secondInputs[1] = offset - 1 //y
 
-// 	offset2 := offset + approxDegree/2
-// 	return gates, firstInputs, secondInputs
-// }
+	for i := 2; i < size; i++ {
+		gates[i] = Mul2Wires
+		firstInputs[i] = offset //y^2
+		secondInputs[i] = offset + i - 1
+	}
+
+	gates[size] = MulConst         //a1 * y
+	firstInputs[size] = offset - 1 // y
+	constants[size] = getCoefficient(1)
+
+	for i := 1; i < size; i++ {
+		// a_(2i+1) * y^(2i+1)
+		gates[size+i] = MulConst
+		firstInputs[size+i] = offset + i
+		constants[size+i] = getCoefficient(2*i + 1)
+	}
+
+	gates[2*size] = AddConst
+	firstInputs[2*size] = offset + size
+	constants[2*size] = 0.5
+
+	for i := 1; i < size; i++ {
+		gates[2*size+i] = Add2Wires
+		firstInputs[2*size+i] = offset + size + i
+		secondInputs[2*size+i] = offset + 2*size + i - 1
+	}
+
+	return gates, firstInputs, secondInputs, constants
+}
 
 // func fact(n int) float64 {
 // 	if n == 0 {
