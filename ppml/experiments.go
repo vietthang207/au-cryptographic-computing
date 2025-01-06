@@ -118,7 +118,7 @@ func Main() {
 
 	experimentDotProduct(modelWeights, mnistTestImages, mnistTestLabels)
 
-	for approxDegree := 1; approxDegree < 10; approxDegree += 2 {
+	for approxDegree := 1; approxDegree < 20; approxDegree += 2 {
 		experimentTaylorSeries(modelWeights, mnistTestImages, mnistTestLabels, approxDegree)
 	}
 

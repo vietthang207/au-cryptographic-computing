@@ -195,7 +195,7 @@ func getPolynomialSubCircuit(inputSize int, approxDegree int) ([]ArithGate, []in
 // }
 
 func getCoefficient(degree int) float64 {
-	coef := [10]float64{0.5, 0.25, 0, -1.0 / 48, 0, 1.0 / 480, 0, -17.0 / 80640, 0, 31.0 / 1451520}
+	coef := [20]float64{0.5, 0.25, 0, -1.0 / 48, 0, 1.0 / 480, 0, -17.0 / 80640, 0, 31.0 / 1451520, 0, -0.0000021645, 0, 0.00000020498, 0, -0.0000000198, 0, 0.00000001719, 0, -0.00000001191}
 	return coef[degree]
 }
 
