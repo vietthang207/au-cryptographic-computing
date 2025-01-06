@@ -48,9 +48,6 @@ func Sub(x BigDec, y BigDec) BigDec {
 }
 
 func isNegative(x BigDec) bool {
-	// fmt.Println("x.integral: ", x.integral)
-	// fmt.Println("max_integral: ", MAX_INTEGRAL)
-	// fmt.Println(x.integral.Cmp(big.NewInt(MAX_INTEGRAL)))
 	return x.integral.Cmp(big.NewInt(MAX_INTEGRAL)) > 0
 }
 
@@ -63,10 +60,7 @@ func Mul(x BigDec, y BigDec) BigDec {
 	// TODO: check the case x or y = 0
 	if isNegative(x) {
 		sign *= -1
-		// fmt.Println("Max integral: ", MAX_INTEGRAL)
-		// fmt.Println("before: ", x.integral)
 		xTmp.Sub(modulus, x.integral)
-		// fmt.Println("after: ", x.integral)
 	}
 	if isNegative(y) {
 		sign *= -1
@@ -93,12 +87,10 @@ func Mul(x BigDec, y BigDec) BigDec {
 // }
 
 func RandForSecretShare() BigDec {
-	// return BigDec{integral: int64(rand.Intn(MAX_RAND)) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 	return BigDec{integral: big.NewInt(rand.Int63n(SECRET_SHARE_MAX_RAND)), scalar: big.NewInt(DEFAULT_SCALAR)}
 }
 
 func RandForDealer() BigDec {
-	// return BigDec{integral: int64(rand.Intn(MAX_RAND)) * DEFAULT_SCALAR, scalar: DEFAULT_SCALAR}
 	return BigDec{integral: big.NewInt(rand.Int63n(DEALER_MAX_RAND)), scalar: big.NewInt(DEFAULT_SCALAR)}
 }
 
@@ -134,37 +126,18 @@ func FloatToBigDecDefaultScalar(xf float64) BigDec {
 }
 
 func (x BigDec) ToFloat() float64 {
-	// return float64(float64(x.integral) / float64(x.scalar))
-	// fmt.Println("x.integral: ", x.integral)
 	modulus := big.NewInt(MODULUS)
 	integralFloat := 0.0
 	if isNegative(x) {
-		// fmt.Println("not else")
-		// fmt.Println(x.integral)
-		// fmt.Println(big.NewInt(MAX_INTEGRAL))
 		tmp := new(big.Int)
 		integralFloat, _ = tmp.Sub(modulus, x.integral).Float64()
-		// fmt.Println("integralFloat: ", integralFloat)
 		integralFloat = 0 - integralFloat
-		// fmt.Println("integralFloat: ", integralFloat)
 	} else {
-		// fmt.Println("else")
 		integralFloat, _ = x.integral.Float64()
 	}
 	scalarFloat, _ := x.scalar.Float64()
-	// fmt.Println("x.integral: ", x.integral)
-	// fmt.Println(MAX_INTEGRAL)
-	// fmt.Println("integralFloat: ", integralFloat)
 	return integralFloat / scalarFloat
 }
-
-// TODO: change this function to return big.Int
-// func (x *BigDec) GetScaledInt() int {
-// 	// return int(x.integral / x.scalar)
-// 	res := new(big.Int)
-// 	res.Div(x.integral, x.scalar)
-// 	return int(res.Int64())
-// }
 
 func FloatArrayToBigDec(array []float64, scalar int) []BigDec {
 	res := make([]BigDec, len(array))

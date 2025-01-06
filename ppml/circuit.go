@@ -54,9 +54,6 @@ func PolyToDotProductCircuit(inputSize int) circuit {
 }
 
 func getInputSubCircuit(inputSize int) ([]ArithGate, []int, []int) {
-	// var gates = []ArithGate{InputA, InputA, InputA, InputB, InputB, InputB}
-	// var firstInputs = []int{0, 1, 2, 0, 1, 2}
-	// var secondInputs = []int{0, 0, 0, 0, 0, 0}
 	gates := make([]ArithGate, inputSize*2)
 	firstInputs := make([]int, inputSize*2)
 	secondInputs := make([]int, inputSize*2)
