@@ -5,6 +5,7 @@ import (
 	"PPML/ppml/model"
 	"fmt"
 	"math"
+	"time"
 )
 
 const MNIST_IMG_SIZE = 784
@@ -64,6 +65,7 @@ func experimentDotProduct(modelWeights model.LogRegression, mnistTestImages [][]
 	d := initDealer(mnistCircuit)
 
 	wrongCounter := 0
+	start := time.Now()
 	for i := 0; i < numTestImages; i++ {
 		expected := mnistTestLabels[i]
 		actual := simulateDotProductProtocol(mnistCircuit, mnistTestImages[i], modelWeights, d)
@@ -71,6 +73,8 @@ func experimentDotProduct(modelWeights model.LogRegression, mnistTestImages [][]
 			wrongCounter += 1
 		}
 	}
+	elapsed := time.Since(start)
+	fmt.Printf("Execution time: %v microseconds\n", elapsed.Microseconds())
 	accuracy := 1 - float64(wrongCounter)/float64(numTestImages)
 	fmt.Println("Accuracy of dot product MPC: ", accuracy)
 
@@ -84,6 +88,7 @@ func experimentTaylorSeries(modelWeights model.LogRegression, mnistTestImages []
 	// printCircuit(mnistCircuit)
 
 	wrongCounter := 0
+	start := time.Now()
 	for i := 0; i < numTestImages; i++ {
 		expected := mnistTestLabels[i]
 		actual := simulateTaylorSeriesProtocol(mnistCircuit, mnistTestImages[i], modelWeights, d)
@@ -91,6 +96,8 @@ func experimentTaylorSeries(modelWeights model.LogRegression, mnistTestImages []
 			wrongCounter += 1
 		}
 	}
+	elapsed := time.Since(start)
+	fmt.Printf("Execution time: %v microseconds\n", elapsed.Microseconds())
 	accuracy := 1 - float64(wrongCounter)/float64(numTestImages)
 	fmt.Printf("Accuracy of MPC with Taylor approximation of degree %d: %f\n", approxDegree, accuracy)
 }

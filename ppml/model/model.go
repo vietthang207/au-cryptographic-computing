@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"path"
+	"time"
 )
 
 type LogRegression struct {
@@ -71,12 +72,15 @@ func TestModel() {
 	images, labels := datasets.LoadTestsetFor0And1()
 	numTest := len(images)
 	correctPrediction := 0
+	start := time.Now()
 	for i := 0; i < numTest; i++ {
 		prediction := int(math.Round(predict(weights, images[i])))
 		if prediction == labels[i] {
 			correctPrediction += 1
 		}
 	}
+	elapsed := time.Since(start)
+	fmt.Printf("Execution time: %v microseconds\n", elapsed.Microseconds())
 	accuracy := float64(correctPrediction) / float64(numTest)
 	fmt.Println("Accuracy: ", accuracy)
 }
